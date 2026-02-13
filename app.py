@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 import warnings
+import os
 
 # ---------------- WARNINGS (OPTIONAL CLEANUP) ----------------
 warnings.filterwarnings("ignore")
@@ -16,7 +17,29 @@ st.set_page_config(
 )
 
 # ---------------- LOAD MODEL ----------------
-model = joblib.load("cocacola_model.pkl")
+
+from sklearn.ensemble import RandomForestRegressor
+
+MODEL_PATH = "cocacola_model.pkl"
+DATA_PATH = "Coca-Cola_stock_history.csv"
+
+if os.path.exists(MODEL_PATH):
+    model = joblib.load(MODEL_PATH)
+else:
+    # Train model on Streamlit Cloud
+    df = pd.read_csv(DATA_PATH)
+
+    X = df[['Open', 'High', 'Low', 'Volume']]
+    y = df['Close']
+
+    model = RandomForestRegressor(
+        n_estimators=100,
+        random_state=42
+    )
+    model.fit(X, y)
+
+    joblib.dump(model, MODEL_PATH)
+
 
 # ---------------- LOAD IMAGES ----------------
 banner = Image.open("assets/banner.jpg")
